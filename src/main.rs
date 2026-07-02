@@ -9,7 +9,7 @@
 
 use std::process::exit;
 
-use vyges_hold_fix::engine::{self, HoldResult};
+use vyges_hold_fix::engine::{self, HoldResult, Insertion};
 use vyges_hold_fix::job::{parse_cfg, HoldJob};
 use vyges_sta_si::job::StaJob;
 
@@ -24,6 +24,7 @@ usage:
 flags:
   -o FILE              write the hold-fixed netlist to FILE (default: stdout)
   --json               emit the before/after report as JSON
+  --eco FILE           write the ECO manifest (insertions) as JSON — for a physical applier
   --fail-on-violation  exit 3 if the result still has negative hold slack (CI gate)
   -q, --quiet          suppress non-essential output
   -v, --verbose        extra detail on stderr
@@ -35,6 +36,7 @@ flags:
 struct Cli {
     positionals: Vec<String>,
     out: Option<String>,
+    eco: Option<String>,
     json: bool,
     fail_on_violation: bool,
     quiet: bool,
@@ -50,6 +52,10 @@ fn parse_cli(args: &[String]) -> Cli {
         match args[i].as_str() {
             "-o" => {
                 c.out = args.get(i + 1).cloned();
+                i += 1;
+            }
+            "--eco" => {
+                c.eco = args.get(i + 1).cloned();
                 i += 1;
             }
             "--json" => c.json = true,
@@ -84,8 +90,8 @@ fn render_report(r: &HoldResult) -> String {
         if r.after_wns >= 0.0 { "MET" } else { "VIOLATED" }
     ));
     s.push_str(&format!("  delays:  {} inserted\n", r.inserted.len()));
-    for (buf, ep) in r.inserted.iter().take(20) {
-        s.push_str(&format!("    {buf} delays {ep}\n"));
+    for ins in r.inserted.iter().take(20) {
+        s.push_str(&format!("    {} delays {}/{}\n", ins.buffer, ins.cap_inst, ins.cap_pin));
     }
     if r.inserted.len() > 20 {
         s.push_str(&format!("    … and {} more\n", r.inserted.len() - 20));
@@ -158,6 +164,39 @@ fn write_netlist(text: &str, out: &Option<String>, quiet: bool) {
     }
 }
 
+fn json_str(s: &str) -> String {
+    // minimal JSON string escaping (identifiers incl. Verilog escaped names / bus brackets)
+    let mut o = String::with_capacity(s.len() + 2);
+    o.push('"');
+    for c in s.chars() {
+        match c {
+            '"' => o.push_str("\\\""),
+            '\\' => o.push_str("\\\\"),
+            c => o.push(c),
+        }
+    }
+    o.push('"');
+    o
+}
+
+fn eco_manifest_json(r: &HoldResult) -> String {
+    let items: Vec<String> = r
+        .inserted
+        .iter()
+        .map(|i: &Insertion| {
+            format!(
+                "{{\"buffer\":{},\"cell\":{},\"in_pin\":{},\"out_pin\":{},\"in_net\":{},\"out_net\":{},\"cap_inst\":{},\"cap_pin\":{}}}",
+                json_str(&i.buffer), json_str(&i.cell), json_str(&i.in_pin), json_str(&i.out_pin),
+                json_str(&i.in_net), json_str(&i.out_net), json_str(&i.cap_inst), json_str(&i.cap_pin)
+            )
+        })
+        .collect();
+    format!(
+        "{{\"hold_before_ns\":{},\"hold_after_ns\":{},\"count\":{},\"insertions\":[{}]}}",
+        r.before_whs, r.after_whs, r.inserted.len(), items.join(",")
+    )
+}
+
 fn finish(r: HoldResult, cli: &Cli) {
     if cli.json {
         println!("{}", report_json(&r));
@@ -168,6 +207,12 @@ fn finish(r: HoldResult, cli: &Cli) {
         write_netlist(&r.netlist_v, &cli.out, cli.quiet);
         if !cli.quiet {
             eprint!("{}", render_report(&r));
+        }
+    }
+    if let Some(path) = &cli.eco {
+        match std::fs::write(path, eco_manifest_json(&r)) {
+            Ok(_) => { if !cli.quiet { eprintln!("eco manifest ({} insertions) -> {path}", r.inserted.len()); } }
+            Err(e) => { eprintln!("error: {path}: {e}"); exit(1); }
         }
     }
     if cli.fail_on_violation && r.after_whs < -r.hold_margin {

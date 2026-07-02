@@ -21,6 +21,22 @@ use vyges_sta_si::sta::Timer;
 use crate::emit;
 use crate::job::{glob_match, HoldJob};
 
+/// One applied delay insertion — everything a physical ECO applier needs to re-create it on
+/// a routed database: make the buffer instance, place it, and rewire the capture pin. The
+/// capture pin's original net (`in_net`) now feeds the buffer input; the buffer output
+/// (`out_net`) drives the capture pin.
+#[derive(Debug, Clone)]
+pub struct Insertion {
+    pub buffer: String,   // new delay-buffer instance name
+    pub cell: String,     // delay cell master
+    pub in_pin: String,   // buffer input pin name
+    pub out_pin: String,  // buffer output pin name
+    pub in_net: String,   // net feeding the buffer input (the pin's original driver net)
+    pub out_net: String,  // new net the buffer drives, into the capture pin
+    pub cap_inst: String, // capture instance whose pin is re-driven
+    pub cap_pin: String,  // capture pin (e.g. D)
+}
+
 /// Outcome of a hold-fix run.
 #[derive(Debug, Clone)]
 pub struct HoldResult {
@@ -29,8 +45,8 @@ pub struct HoldResult {
     pub before_wns: f64,
     pub after_wns: f64,
     pub hold_margin: f64,
-    /// `(buffer_instance, endpoint_it_delays)` for every inserted delay buffer, in order.
-    pub inserted: Vec<(String, String)>,
+    /// Every applied delay insertion, in order — the machine-readable ECO manifest.
+    pub inserted: Vec<Insertion>,
     /// The hold-fixed netlist as structural Verilog.
     pub netlist_v: String,
     pub eco: bool,
@@ -65,7 +81,7 @@ fn insert_series_delay(
     bin: &str,
     bout: &str,
     k: usize,
-) -> Option<String> {
+) -> Option<Insertion> {
     let ii = nl.insts.iter().position(|i| i.name == inst_name)?;
     let ci = nl.insts[ii].conns.iter().position(|(p, _)| p == pin)?;
     let old_net = nl.insts[ii].conns[ci].1.clone();
@@ -75,9 +91,18 @@ fn insert_series_delay(
     nl.insts.push(Inst {
         cell: buf_cell.to_string(),
         name: bufname.clone(),
-        conns: vec![(bin.to_string(), old_net), (bout.to_string(), new_net)],
+        conns: vec![(bin.to_string(), old_net.clone()), (bout.to_string(), new_net.clone())],
     });
-    Some(bufname)
+    Some(Insertion {
+        buffer: bufname,
+        cell: buf_cell.to_string(),
+        in_pin: bin.to_string(),
+        out_pin: bout.to_string(),
+        in_net: old_net,
+        out_net: new_net,
+        cap_inst: inst_name.to_string(),
+        cap_pin: pin.to_string(),
+    })
 }
 
 /// Run a hold-fix job loaded from disk.
@@ -124,7 +149,7 @@ pub fn optimize(
     let before_wns = timer.wns();
     let margin = cfg.hold_margin;
 
-    let mut inserted: Vec<(String, String)> = Vec::new();
+    let mut inserted: Vec<Insertion> = Vec::new();
     let mut counter = 0usize;
 
     for _round in 0..cfg.rounds {
@@ -144,7 +169,7 @@ pub fn optimize(
 
         // one delay buffer per still-violating endpoint (a chain grows over rounds)
         let mut trial = nl.clone();
-        let mut round_bufs: Vec<(String, String)> = Vec::new();
+        let mut round_bufs: Vec<Insertion> = Vec::new();
         for p in &viol {
             let label = timer.pin_label(*p).to_string();
             // "inst/pin" — a primary-output port (no '/') is skipped (rare for hold)
@@ -152,10 +177,10 @@ pub fn optimize(
             if cfg.dont_touch.iter().any(|g| glob_match(g, inst_name)) {
                 continue;
             }
-            if let Some(bufname) =
+            if let Some(ins) =
                 insert_series_delay(&mut trial, inst_name, pin, &cfg.buffer, &bin, &bout, counter)
             {
-                round_bufs.push((bufname, label));
+                round_bufs.push(ins);
                 counter += 1;
             }
         }
