@@ -1,0 +1,15 @@
+# CI — manual until launch.
+name: ci
+on:
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: build + test + clippy
+        run: |
+          cargo build --locked
+          cargo test --locked
+          cargo clippy --all-targets -- -D warnings

@@ -1,0 +1,11 @@
+# A hold-fix job = a .sta timing job (design/netlist/lib/clock) + hold-fix knobs.
+design: top
+netlist: two_flop.v
+lib: two_flop.lib
+clock: clk 5.0
+input_slew: 0.02
+output_load: 0.003
+# --- hold-fix knobs ---
+buffer: DLY          # the delay cell to insert in series
+hold_margin: 0.0     # fix endpoints with hold slack below -margin
+rounds: high         # low | medium | high  (max ECO rounds)

@@ -1,0 +1,22 @@
+[package]
+name = "vyges-hold-fix"
+version = "0.1.0"
+edition = "2021"
+description = "Post-route hold-fix ECO: insert series delay cells on hold-violating capture pins to close hold timing. Netlist in / netlist out."
+license = "Apache-2.0"
+authors = ["Vyges <https://vyges.com/contact>"]
+homepage = "https://vyges.com"
+repository = "https://github.com/vyges-tools/hold-fix"
+
+# One dependency: the timing engine. vyges-sta-si re-exports the shared vyges-loom readers +
+# design model, so buffer-insert needs no other deps.
+[dependencies]
+vyges-sta-si = { git = "https://github.com/vyges-tools/sta-si", branch = "main" }
+
+[[bin]]
+name = "vyges-hold-fix"
+path = "src/main.rs"
+
+[lib]
+name = "vyges_hold_fix"
+path = "src/lib.rs"
