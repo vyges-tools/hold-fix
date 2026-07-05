@@ -1,6 +1,6 @@
 [package]
 name = "vyges-hold-fix"
-version = "0.1.5"
+version = "0.1.6"
 edition = "2021"
 description = "Post-route hold-fix ECO: insert series delay cells on hold-violating capture pins to close hold timing. Netlist in / netlist out."
 license = "Apache-2.0"
