@@ -222,6 +222,39 @@ fn finish(r: HoldResult, cli: &Cli) {
 
 fn main() {
     let args: Vec<String> = std::env::args().skip(1).collect();
+
+    if args.iter().any(|a| a == "--describe") {
+        // Machine-readable description of `run` for tooling that drives it.
+        const DESCRIBE: &str = r#"{
+  "name": "hold-fix",
+  "summary": "post-route hold-fix ECO (insert series delay on hold-violating capture pins)",
+  "invocation": {
+    "args_template": ["run", "{job}"],
+    "optional": [
+      { "arg": "out", "flag": "-o" },
+      { "arg": "eco", "flag": "--eco" }
+    ],
+    "emits_json": true
+  },
+  "inputs": {
+    "type": "object",
+    "required": ["job"],
+    "properties": {
+      "job": { "type": "string", "description": "path to the hold-fix job file (design, netlist, lib, clock, buffer, hold margin)" },
+      "out": { "type": "string", "description": "write the hold-fixed netlist to FILE (default: stdout)" },
+      "eco": { "type": "string", "description": "write the ECO manifest (insertions) as JSON, for a physical applier" }
+    }
+  },
+  "artifacts": [
+    { "role": "netlist", "from_arg": "out" },
+    { "role": "eco_manifest", "from_arg": "eco" }
+  ]
+}
+"#;
+        print!("{DESCRIBE}");
+        return;
+    }
+
     let cli = parse_cli(&args);
 
     if cli.version {
