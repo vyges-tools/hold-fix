@@ -11,13 +11,13 @@ dependencies = [
 
 [[package]]
 name = "vyges-loom"
-version = "0.0.3"
-source = "git+https://github.com/vyges-tools/loom?branch=main#dac35a1fb39a29db2e17d13c9a937e43929f6c2d"
+version = "0.1.11"
+source = "git+https://github.com/vyges-tools/loom?branch=main#9adeb67112b389cff9e5e6e81eb959ce4057e6e0"
 
 [[package]]
 name = "vyges-sta-si"
-version = "0.1.2"
-source = "git+https://github.com/vyges-tools/sta-si?branch=main#b8044a160881b1dc83c4bc0ce5ae3f1557889a4f"
+version = "0.1.11"
+source = "git+https://github.com/vyges-tools/sta-si?branch=main#d7843967cc53075c41b80fa7874788cede8abcc7"
 dependencies = [
  "vyges-loom",
 ]
