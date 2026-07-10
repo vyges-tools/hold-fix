@@ -248,7 +248,8 @@ fn main() {
   "artifacts": [
     { "role": "netlist", "from_arg": "out" },
     { "role": "eco_manifest", "from_arg": "eco" }
-  ]
+  ],
+  "consumes": ["netlist", "liberty", "timing_report"]
 }
 "#;
         print!("{DESCRIBE}");
