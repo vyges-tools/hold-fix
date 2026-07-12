@@ -12,6 +12,7 @@ repository = "https://github.com/vyges-tools/hold-fix"
 # design model, so buffer-insert needs no other deps.
 [dependencies]
 vyges-sta-si = { git = "https://github.com/vyges-tools/sta-si", branch = "main" }
+vyges-events = { git = "https://github.com/vyges-tools/events", branch = "main", default-features = false }
 
 [[bin]]
 name = "vyges-hold-fix"
