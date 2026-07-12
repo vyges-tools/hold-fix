@@ -198,7 +198,40 @@ fn eco_manifest_json(r: &HoldResult) -> String {
     )
 }
 
+// Emit structured events (stderr only) summarizing the hold-fix ECO: one HOLDFIX-DONE
+// summary always, plus a HOLDFIX-FIX per insertion when the count is small (<=20).
+fn emit_hold_fix_events(r: &HoldResult) {
+    use vyges_events::{Event, Severity};
+    if r.inserted.len() <= 20 {
+        for ins in &r.inserted {
+            vyges_events::emit(
+                &Event::new(
+                    "vyges-hold-fix",
+                    Severity::Info,
+                    format!("inserted {} delaying {}/{}", ins.buffer, ins.cap_inst, ins.cap_pin),
+                )
+                .with_code("HOLDFIX-FIX")
+                .with_objects(vec![format!("net:{}", ins.out_net)]),
+            );
+        }
+    }
+    vyges_events::emit(
+        &Event::new(
+            "vyges-hold-fix",
+            Severity::Info,
+            format!(
+                "hold-fix complete: {} delay(s) inserted, WHS {:.4} -> {:.4} ns",
+                r.inserted.len(),
+                r.before_whs,
+                r.after_whs
+            ),
+        )
+        .with_code("HOLDFIX-DONE"),
+    );
+}
+
 fn finish(r: HoldResult, cli: &Cli) {
+    emit_hold_fix_events(&r);
     if cli.json {
         println!("{}", report_json(&r));
         if cli.out.is_some() {
