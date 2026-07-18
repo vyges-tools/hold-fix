@@ -290,6 +290,10 @@ fn main() {
         const DESCRIBE: &str = r#"{
   "name": "hold-fix",
   "summary": "post-route hold-fix ECO (insert series delay on hold-violating capture pins)",
+  "maturity": "structured",
+  "provenance_limitations": [
+      "The job names the netlist, Liberty and timing report; input_hash covers the job path and arguments, not their contents."
+  ],
   "invocation": {
     "args_template": ["run", "{job}"],
     "optional": [
