@@ -53,23 +53,47 @@ pub struct HoldResult {
 }
 
 /// The (single input, single output) pin names of the delay-buffer cell.
+/// The (input, output) pin of the delay cell, requiring **exactly one of each**.
+///
+/// Taking merely the *first* input and *first* output silently accepts any cell at all. Given
+/// a flop it selects CK and Q, and the ECO then chains flip-flops as if they were delay
+/// buffers, emitting instances with no data pin connected — a structurally broken netlist that
+/// still parses as Verilog and so survives every downstream syntactic check.
+///
+/// A delay cell is one-in one-out by definition, so anything else is a mis-specified `buffer:`
+/// and is refused here rather than turned into a corrupt netlist.
 fn buffer_pins(lib: &Lib, buf: &str) -> Result<(String, String), String> {
     let cell = lib
         .cell(buf)
         .ok_or_else(|| format!("buffer cell {buf:?} not in any .lib"))?;
-    let inp = cell
-        .pins
-        .iter()
-        .find(|(_, p)| format!("{:?}", p.direction).contains("In"))
-        .map(|(n, _)| n.clone())
-        .ok_or_else(|| format!("buffer {buf:?} has no input pin"))?;
-    let out = cell
-        .pins
-        .iter()
-        .find(|(_, p)| format!("{:?}", p.direction).contains("Out"))
-        .map(|(n, _)| n.clone())
-        .ok_or_else(|| format!("buffer {buf:?} has no output pin"))?;
-    Ok((inp, out))
+    let pins_matching = |want: &str| -> Vec<&String> {
+        cell.pins
+            .iter()
+            .filter(|(_, p)| format!("{:?}", p.direction).contains(want))
+            .map(|(n, _)| n)
+            .collect()
+    };
+    let ins = pins_matching("In");
+    let outs = pins_matching("Out");
+    let names = |v: &[&String]| {
+        if v.is_empty() {
+            "none".to_string()
+        } else {
+            v.iter().map(|s| s.as_str()).collect::<Vec<_>>().join(", ")
+        }
+    };
+    if ins.len() != 1 || outs.len() != 1 {
+        return Err(format!(
+            "buffer {buf:?} is not a delay cell: a delay cell has exactly one input and one \
+             output, but this has {} input(s) [{}] and {} output(s) [{}]. Pick a single-stage \
+             buffer or delay cell.",
+            ins.len(),
+            names(&ins),
+            outs.len(),
+            names(&outs)
+        ));
+    }
+    Ok((ins[0].clone(), outs[0].clone()))
 }
 
 /// Insert a delay buffer in series on the net feeding `inst_name/pin`. The pin is re-driven
