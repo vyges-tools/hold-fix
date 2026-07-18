@@ -78,21 +78,35 @@ fn render_report(r: &HoldResult) -> String {
     s.push_str("vyges-hold-fix — hold-fix ECO\n");
     s.push_str(&format!(
         "  mode:    {}\n",
-        if r.eco { "post-route ECO (SPEF interconnect)" } else { "pre-route (ideal interconnect)" }
+        if r.eco {
+            "post-route ECO (SPEF interconnect)"
+        } else {
+            "pre-route (ideal interconnect)"
+        }
     ));
     s.push_str(&format!(
         "  hold:    WHS {:.4} -> {:.4} ns [{}]  (margin {:.4})\n",
-        r.before_whs, r.after_whs, met(r.after_whs, r.hold_margin), r.hold_margin
+        r.before_whs,
+        r.after_whs,
+        met(r.after_whs, r.hold_margin),
+        r.hold_margin
     ));
     s.push_str(&format!(
         "  setup:   WNS {:.4} -> {:.4} ns [{}]\n",
         r.before_wns,
         r.after_wns,
-        if r.after_wns >= 0.0 { "MET" } else { "VIOLATED" }
+        if r.after_wns >= 0.0 {
+            "MET"
+        } else {
+            "VIOLATED"
+        }
     ));
     s.push_str(&format!("  delays:  {} inserted\n", r.inserted.len()));
     for ins in r.inserted.iter().take(20) {
-        s.push_str(&format!("    {} delays {}/{}\n", ins.buffer, ins.cap_inst, ins.cap_pin));
+        s.push_str(&format!(
+            "    {} delays {}/{}\n",
+            ins.buffer, ins.cap_inst, ins.cap_pin
+        ));
     }
     if r.inserted.len() > 20 {
         s.push_str(&format!("    … and {} more\n", r.inserted.len() - 20));
@@ -140,7 +154,8 @@ library (d) {
   }
 }
 "#;
-const DEMO_JOB: &str = "design: top\nnetlist: x\nlib: x\nclock: clk 5.0\ninput_slew: 0.02\noutput_load: 0.003\n";
+const DEMO_JOB: &str =
+    "design: top\nnetlist: x\nlib: x\nclock: clk 5.0\ninput_slew: 0.02\noutput_load: 0.003\n";
 
 fn run_demo() -> Result<HoldResult, String> {
     let sta = StaJob::parse(DEMO_JOB, "").map_err(|e| e.to_string())?;
@@ -194,7 +209,10 @@ fn eco_manifest_json(r: &HoldResult) -> String {
         .collect();
     format!(
         "{{\"hold_before_ns\":{},\"hold_after_ns\":{},\"count\":{},\"insertions\":[{}]}}",
-        r.before_whs, r.after_whs, r.inserted.len(), items.join(",")
+        r.before_whs,
+        r.after_whs,
+        r.inserted.len(),
+        items.join(",")
     )
 }
 
@@ -208,7 +226,10 @@ fn emit_hold_fix_events(r: &HoldResult) {
                 &Event::new(
                     "vyges-hold-fix",
                     Severity::Info,
-                    format!("inserted {} delaying {}/{}", ins.buffer, ins.cap_inst, ins.cap_pin),
+                    format!(
+                        "inserted {} delaying {}/{}",
+                        ins.buffer, ins.cap_inst, ins.cap_pin
+                    ),
                 )
                 .with_code("HOLDFIX-FIX")
                 .with_objects(vec![format!("net:{}", ins.out_net)]),
@@ -245,8 +266,15 @@ fn finish(r: HoldResult, cli: &Cli) {
     }
     if let Some(path) = &cli.eco {
         match std::fs::write(path, eco_manifest_json(&r)) {
-            Ok(_) => { if !cli.quiet { eprintln!("eco manifest ({} insertions) -> {path}", r.inserted.len()); } }
-            Err(e) => { eprintln!("error: {path}: {e}"); exit(1); }
+            Ok(_) => {
+                if !cli.quiet {
+                    eprintln!("eco manifest ({} insertions) -> {path}", r.inserted.len());
+                }
+            }
+            Err(e) => {
+                eprintln!("error: {path}: {e}");
+                exit(1);
+            }
         }
     }
     if cli.fail_on_violation && r.after_whs < -r.hold_margin {
@@ -283,6 +311,10 @@ fn main() {
     { "role": "netlist", "from_arg": "out" },
     { "role": "eco_manifest", "from_arg": "eco" }
   ],
+  "assertion": {
+    "id": "hold-eco",
+    "not_applicable": true
+  },
   "consumes": ["netlist", "liberty", "timing_report"]
 }
 "#;
@@ -293,7 +325,11 @@ fn main() {
     let cli = parse_cli(&args);
 
     if cli.version {
-        println!("vyges-hold-fix {} ({})", vyges_hold_fix::VERSION, env!("VYGES_GIT_SHA"));
+        println!(
+            "vyges-hold-fix {} ({})",
+            vyges_hold_fix::VERSION,
+            env!("VYGES_GIT_SHA")
+        );
         println!("{}", vyges_hold_fix::COPYRIGHT);
         return;
     }
@@ -319,7 +355,11 @@ fn main() {
             match HoldJob::load(path) {
                 Ok(j) => println!(
                     "OK  design={} buffer={} hold_margin={} rounds={} dont_touch={}",
-                    j.sta.design, j.cfg.buffer, j.cfg.hold_margin, j.cfg.rounds, j.cfg.dont_touch.len()
+                    j.sta.design,
+                    j.cfg.buffer,
+                    j.cfg.hold_margin,
+                    j.cfg.rounds,
+                    j.cfg.dont_touch.len()
                 ),
                 Err(e) => {
                     eprintln!("error: {e}");
@@ -340,7 +380,10 @@ fn main() {
                 }
             };
             if cli.verbose {
-                eprintln!("hold-fixing {} (delay {}, rounds {})", job.sta.design, job.cfg.buffer, job.cfg.rounds);
+                eprintln!(
+                    "hold-fixing {} (delay {}, rounds {})",
+                    job.sta.design, job.cfg.buffer, job.cfg.rounds
+                );
             }
             match engine::run(&job) {
                 Ok(r) => finish(r, &cli),

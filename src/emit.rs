@@ -26,13 +26,31 @@ fn join_ids<'a, I: IntoIterator<Item = &'a str>>(it: I) -> String {
 /// then one instance line per cell (`<cell> <inst> ( .<pin>(<net>), … );`).
 pub fn to_verilog(nl: &Netlist) -> String {
     let mut s = String::new();
-    let ports: Vec<&str> = nl.inputs.iter().chain(&nl.outputs).map(String::as_str).collect();
-    let _ = writeln!(s, "module {} ( {} );", nl.module, join_ids(ports.iter().copied()));
+    let ports: Vec<&str> = nl
+        .inputs
+        .iter()
+        .chain(&nl.outputs)
+        .map(String::as_str)
+        .collect();
+    let _ = writeln!(
+        s,
+        "module {} ( {} );",
+        nl.module,
+        join_ids(ports.iter().copied())
+    );
     if !nl.inputs.is_empty() {
-        let _ = writeln!(s, "  input {};", join_ids(nl.inputs.iter().map(String::as_str)));
+        let _ = writeln!(
+            s,
+            "  input {};",
+            join_ids(nl.inputs.iter().map(String::as_str))
+        );
     }
     if !nl.outputs.is_empty() {
-        let _ = writeln!(s, "  output {};", join_ids(nl.outputs.iter().map(String::as_str)));
+        let _ = writeln!(
+            s,
+            "  output {};",
+            join_ids(nl.outputs.iter().map(String::as_str))
+        );
     }
 
     // wires = nets referenced by instance connections that aren't primary ports, in
@@ -53,9 +71,18 @@ pub fn to_verilog(nl: &Netlist) -> String {
     }
 
     for inst in &nl.insts {
-        let conns: Vec<String> =
-            inst.conns.iter().map(|(p, n)| format!(".{p}({})", id(n))).collect();
-        let _ = writeln!(s, "  {} {} ( {} );", inst.cell, id(&inst.name), conns.join(", "));
+        let conns: Vec<String> = inst
+            .conns
+            .iter()
+            .map(|(p, n)| format!(".{p}({})", id(n)))
+            .collect();
+        let _ = writeln!(
+            s,
+            "  {} {} ( {} );",
+            inst.cell,
+            id(&inst.name),
+            conns.join(", ")
+        );
     }
     let _ = writeln!(s, "endmodule");
     s

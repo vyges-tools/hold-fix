@@ -54,7 +54,9 @@ pub struct HoldResult {
 
 /// The (single input, single output) pin names of the delay-buffer cell.
 fn buffer_pins(lib: &Lib, buf: &str) -> Result<(String, String), String> {
-    let cell = lib.cell(buf).ok_or_else(|| format!("buffer cell {buf:?} not in any .lib"))?;
+    let cell = lib
+        .cell(buf)
+        .ok_or_else(|| format!("buffer cell {buf:?} not in any .lib"))?;
     let inp = cell
         .pins
         .iter()
@@ -91,7 +93,10 @@ fn insert_series_delay(
     nl.insts.push(Inst {
         cell: buf_cell.to_string(),
         name: bufname.clone(),
-        conns: vec![(bin.to_string(), old_net.clone()), (bout.to_string(), new_net.clone())],
+        conns: vec![
+            (bin.to_string(), old_net.clone()),
+            (bout.to_string(), new_net.clone()),
+        ],
     });
     Some(Insertion {
         buffer: bufname,
@@ -173,13 +178,21 @@ pub fn optimize(
         for p in &viol {
             let label = timer.pin_label(*p).to_string();
             // "inst/pin" — a primary-output port (no '/') is skipped (rare for hold)
-            let Some((inst_name, pin)) = label.rsplit_once('/') else { continue };
+            let Some((inst_name, pin)) = label.rsplit_once('/') else {
+                continue;
+            };
             if cfg.dont_touch.iter().any(|g| glob_match(g, inst_name)) {
                 continue;
             }
-            if let Some(ins) =
-                insert_series_delay(&mut trial, inst_name, pin, &cfg.buffer, &bin, &bout, counter)
-            {
+            if let Some(ins) = insert_series_delay(
+                &mut trial,
+                inst_name,
+                pin,
+                &cfg.buffer,
+                &bin,
+                &bout,
+                counter,
+            ) {
                 round_bufs.push(ins);
                 counter += 1;
             }
