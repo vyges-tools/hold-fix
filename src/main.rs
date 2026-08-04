@@ -288,6 +288,7 @@ fn main() {
     if args.iter().any(|a| a == "--describe") {
         // Machine-readable description of `run` for tooling that drives it.
         const DESCRIBE: &str = r#"{
+  "schema": "vyges-tool-descriptor/1.1",
   "name": "hold-fix",
   "summary": "post-route hold-fix ECO (insert series delay on hold-violating capture pins)",
   "maturity": "structured",
