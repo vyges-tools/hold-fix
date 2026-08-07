@@ -97,29 +97,40 @@ machine-readable record for CI.
 
 ## Known defect — verify the violations before acting on them
 
-**On a design with asynchronous resets this engine can act on hold violations that do not
-exist.** The timer behind it (`vyges-sta-si`) applies a **hold** check on async reset pins
-where OpenSTA applies a **removal** check, which is a different and much looser requirement.
+**On a design whose SDC does not constrain its input ports, this engine can act on hold
+violations that do not exist.** The timer behind it (`vyges-sta-si`) times a path from
+*every* primary input port, seeding it from a job-level default when the SDC declares no
+`set_input_delay` for that port. OpenSTA treats such a port as **unconstrained** and creates
+no timing path from it at all.
 
-Measured on a routed sky130 block (`fft_top`, 2026-08-07), same netlist, SDC, SPEF and
-liberty for both:
+The effect is one-sided. On the setup side an unconstrained port arrives with most of a
+period to spare, so nothing shows. On the **hold** side its arrival is compared against a
+capture clock that has real insertion delay and uncertainty, so it reports a violation of
+roughly that size — and asynchronous resets are the pins most often driven straight from an
+unconstrained port, so they dominate the result.
+
+Measured on a routed sky130 block (`fft_top`, 2026-08-07) whose SDC declares only
+`create_clock`, `set_clock_uncertainty` and `set_propagated_clock` — no input delays —
+with the same netlist, SDC, SPEF and liberty for both:
 
 | | this toolchain | OpenSTA | sign-off |
 | --- | ---: | ---: | ---: |
 | setup WNS | 6.7322 | 6.85 | — |
 | **hold WHS** | **−1.0682** | **+0.88** | **+0.8821** |
 
-Setup agrees to 1.7 %. Hold is out by **1.95 ns and disagrees about the sign**, and every
-violating endpoint in that run is a `RESET_B` pin. Run on that block, this engine inserts
-**599 delay cells into a design that is already hold-clean by 0.88 ns**.
+Setup agrees to 1.7 %. Hold is out by **1.95 ns and disagrees about the sign**. Asked about
+the endpoint we call worst, OpenSTA answers `No paths found` — it does not check that pin,
+because the reset reaching it comes from the unconstrained port `preset_n_i`. Run on that
+block, this engine inserts **599 delay cells into a design that is already hold-clean by
+0.88 ns**.
 
-Until that is fixed:
+Until it is fixed:
 
-- **Check the worst hold endpoints before applying a plan.** If they are async reset pins
-  (`RESET_B`, `SET_B`, …), treat the violation as suspect.
+- **Constrain your inputs.** A `set_input_delay` on every input port removes the cause; this
+  is good SDC practice regardless.
+- **Check the worst hold endpoints before applying a plan.** Trace each back — if it starts
+  at an input port with no declared arrival, the violation is not real.
 - `dont_touch:` accepts globs and can exclude those instances.
-- On a design with no async resets, or where the worst endpoints are flop `D` pins, this
-  does not apply.
 
 The plan-and-apply split limits the damage — this engine emits an ECO plan and never mutates
 a design, so a wrong plan is reviewable before anything is applied. Review it.
