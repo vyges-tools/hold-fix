@@ -112,12 +112,12 @@ dependencies = [
 [[package]]
 name = "vyges-loom"
 version = "0.1.29"
-source = "git+https://github.com/vyges-tools/loom?branch=main#1a40a2fc41e3b5d6ea61d17169ee0fd207e8774e"
+source = "git+https://github.com/vyges-tools/loom?branch=main#0c194027ebfaca9a51149b299c6b7a4c98e58e03"
 
 [[package]]
 name = "vyges-sta-si"
 version = "0.1.29"
-source = "git+https://github.com/vyges-tools/sta-si?branch=main#596db2116927577a7301b281d1b339315571e867"
+source = "git+https://github.com/vyges-tools/sta-si?branch=main#4a578afc1f319c646676e3aaa0003ea1f93350c3"
 dependencies = [
  "vyges-events",
  "vyges-loom",
