@@ -95,6 +95,35 @@ The report prints **before → after** worst hold slack (WHS) and worst setup sl
 the delay cells inserted and the capture pin each one delays. `--json` emits the same as a
 machine-readable record for CI.
 
+## Known defect — verify the violations before acting on them
+
+**On a design with asynchronous resets this engine can act on hold violations that do not
+exist.** The timer behind it (`vyges-sta-si`) applies a **hold** check on async reset pins
+where OpenSTA applies a **removal** check, which is a different and much looser requirement.
+
+Measured on a routed sky130 block (`fft_top`, 2026-08-07), same netlist, SDC, SPEF and
+liberty for both:
+
+| | this toolchain | OpenSTA | sign-off |
+| --- | ---: | ---: | ---: |
+| setup WNS | 6.7322 | 6.85 | — |
+| **hold WHS** | **−1.0682** | **+0.88** | **+0.8821** |
+
+Setup agrees to 1.7 %. Hold is out by **1.95 ns and disagrees about the sign**, and every
+violating endpoint in that run is a `RESET_B` pin. Run on that block, this engine inserts
+**599 delay cells into a design that is already hold-clean by 0.88 ns**.
+
+Until that is fixed:
+
+- **Check the worst hold endpoints before applying a plan.** If they are async reset pins
+  (`RESET_B`, `SET_B`, …), treat the violation as suspect.
+- `dont_touch:` accepts globs and can exclude those instances.
+- On a design with no async resets, or where the worst endpoints are flop `D` pins, this
+  does not apply.
+
+The plan-and-apply split limits the damage — this engine emits an ECO plan and never mutates
+a design, so a wrong plan is reviewable before anything is applied. Review it.
+
 ## Notes
 
 - **Post-route ECO**: with `spef:` present the timer uses extracted interconnect, so the fix

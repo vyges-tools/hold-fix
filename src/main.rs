@@ -293,7 +293,9 @@ fn main() {
   "summary": "post-route hold-fix ECO (insert series delay on hold-violating capture pins)",
   "maturity": "structured",
   "provenance_limitations": [
-      "The job names the netlist, Liberty and timing report; input_hash covers the job path and arguments, not their contents."
+      "The job names the netlist, Liberty and timing report; input_hash covers the job path and arguments, not their contents.",
+      "KNOWN DEFECT: on a design with asynchronous resets this engine can act on hold violations that do not exist. The timer behind it applies a HOLD check on async reset pins where OpenSTA applies a REMOVAL check, which is a different and much looser requirement. Measured on a routed sky130 block with identical netlist/SDC/SPEF/liberty: setup WNS 6.7322 against OpenSTA 6.85 (1.7% apart), but hold WHS -1.0682 against OpenSTA +0.88 and sign-off +0.8821 -- out by 1.95 ns and disagreeing about the sign, with every violating endpoint a RESET_B pin. On that block this engine inserts 599 delay cells into a design already hold-clean by 0.88 ns.",
+      "Until that is fixed, check the worst hold endpoints before applying a plan: if they are async reset pins treat the violation as suspect, and exclude them with dont_touch, which accepts globs. A design with no async resets, or whose worst endpoints are flop D pins, is unaffected. The plan-and-apply split limits the damage -- this engine emits a plan and never mutates a design -- but the plan must be reviewed."
   ],
   "invocation": {
     "args_template": ["run", "{job}"],
