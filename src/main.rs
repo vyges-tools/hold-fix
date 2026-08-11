@@ -14,12 +14,12 @@ use vyges_hold_fix::job::{parse_cfg, HoldJob};
 use vyges_sta_si::job::StaJob;
 
 const USAGE: &str = "\
-vyges-hold-fix — post-route hold-fix ECO (insert series delay on hold-violating capture pins)
+vyges loom hold-fix — post-route hold-fix ECO (insert series delay on hold-violating capture pins)
 
 usage:
-  vyges-hold-fix run   JOB  [-o OUT] [--json] [--fail-on-violation]   hold-fix -> delayed netlist
-  vyges-hold-fix check JOB                                            validate the job
-  vyges-hold-fix demo                                                 hold-fix a built-in example (no files)
+  vyges loom hold-fix run   JOB  [-o OUT] [--json] [--fail-on-violation]   hold-fix -> delayed netlist
+  vyges loom hold-fix check JOB                                            validate the job
+  vyges loom hold-fix demo                                                 hold-fix a built-in example (no files)
 
 flags:
   -o FILE              write the hold-fixed netlist to FILE (default: stdout)
