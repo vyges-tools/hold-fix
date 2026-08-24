@@ -103,7 +103,7 @@ dependencies = [
 
 [[package]]
 name = "vyges-hold-fix"
-version = "0.1.31"
+version = "0.1.32"
 dependencies = [
  "vyges-events",
  "vyges-sta-si",
@@ -111,13 +111,13 @@ dependencies = [
 
 [[package]]
 name = "vyges-loom"
-version = "0.1.31"
-source = "git+https://github.com/vyges-tools/loom?branch=main#e2bc88705fa12745532199283e04352bf0c0d0c1"
+version = "0.1.32"
+source = "git+https://github.com/vyges-tools/loom?branch=main#282d4ba674ae933e477a060d7e814e12c49bc445"
 
 [[package]]
 name = "vyges-sta-si"
-version = "0.1.31"
-source = "git+https://github.com/vyges-tools/sta-si?branch=main#c7ec2216f8a7bbd49ef7acd4e8f57b8923c6d6f6"
+version = "0.1.32"
+source = "git+https://github.com/vyges-tools/sta-si?branch=main#a822837aa99b779e28f5699192008dfcd5b49283"
 dependencies = [
  "vyges-events",
  "vyges-loom",
