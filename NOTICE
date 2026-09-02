@@ -1,4 +1,4 @@
-Vyges Buffer Insertion Engine (vyges-buffer-insert)
+Vyges Hold-Fix ECO Engine (vyges-hold-fix)
 Copyright 2026 Vyges. All Rights Reserved.
 
 This product is authored by Vyges (https://vyges.com) and licensed under the
@@ -7,8 +7,5 @@ License in the accompanying LICENSE file or at:
 
     http://www.apache.org/licenses/LICENSE-2.0
 
-vyges-buffer-insert performs STA-driven buffer insertion to relieve over-transition /
-high-fanout nets — netlist in, buffered netlist out.
-
-Per-foundry calibration data and plugins, where applicable, are distributed
-separately under their own terms and are not part of this repository.
+vyges-hold-fix plans post-route hold repair, inserting series delay cells on
+hold-violating capture pins to close hold without disturbing setup.
