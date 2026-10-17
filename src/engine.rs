@@ -66,6 +66,12 @@ fn buffer_pins(lib: &Lib, buf: &str) -> Result<(String, String), String> {
     let cell = lib
         .cell(buf)
         .ok_or_else(|| format!("buffer cell {buf:?} not in any .lib"))?;
+    if cell.dont_use {
+        // named explicitly, so used as told (the reference takes a named buffer cell the same
+        // way) — but the library withholds it from optimisation, and that is worth a word
+        let msg = format!("buffer cell {buf:?} is marked dont_use in its library; inserting it as named");
+        vyges_events::emit(&vyges_events::Event::new("vyges-hold-fix", vyges_events::Severity::Warn, msg).with_code("HOLDFIX-DONT-USE"));
+    }
     let pins_matching = |want: &str| -> Vec<&String> {
         cell.pins
             .iter()
@@ -138,19 +144,9 @@ fn insert_series_delay(
 /// Run a hold-fix job loaded from disk.
 pub fn run(job: &HoldJob) -> Result<HoldResult, String> {
     let sta = &job.sta;
-    let nl = netlist::load(&sta.resolve(&sta.netlist)).map_err(|e| e.to_string())?;
-    let mut lib = Lib::default();
-    for l in &sta.libs {
-        let one = Lib::load(&sta.resolve(l)).map_err(|e| e.to_string())?;
-        lib.cells.extend(one.cells);
-    }
-    if lib.cells.is_empty() {
-        return Err("no cells in any .lib".into());
-    }
-    let spef = match &sta.spef {
-        Some(p) => Some(Spef::load(&sta.resolve(p)).map_err(|e| e.to_string())?),
-        None => None,
-    };
+    // the timer's own reader: libraries merged in the first one's units, SPEF in the netlist's names
+    let (nl, lib, spef) =
+        vyges_sta_si::engine::load_inputs(sta, Default::default()).map_err(|e| e.to_string())?;
     optimize(nl, &lib, sta, spef, job)
 }
 
