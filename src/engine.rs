@@ -121,6 +121,7 @@ fn insert_series_delay(
             (bin.to_string(), old_net.clone()),
             (bout.to_string(), new_net.clone()),
         ],
+        ties: Vec::new(),
     });
     Some(Insertion {
         buffer: bufname,
