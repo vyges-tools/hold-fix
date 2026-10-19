@@ -3,6 +3,12 @@
 version = 4
 
 [[package]]
+name = "adler2"
+version = "2.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "320119579fcad9c21884f5c4861d16174d0e06250625266f50fe6898340abefa"
+
+[[package]]
 name = "itoa"
 version = "1.0.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -13,6 +19,15 @@ name = "memchr"
 version = "2.8.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cf8baf1c55e62ffcace7a9f06f4bd9cd3f0c4beb022d3b367256b91b87513d98"
+
+[[package]]
+name = "miniz_oxide"
+version = "0.8.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1fa76a2c86f704bdb222d66965fb3d63269ce38518b83cb0575fca855ebb6316"
+dependencies = [
+ "adler2",
+]
 
 [[package]]
 name = "proc-macro2"
@@ -112,12 +127,15 @@ dependencies = [
 [[package]]
 name = "vyges-loom"
 version = "0.1.42"
-source = "git+https://github.com/vyges-tools/loom?branch=main#935b8d3b30363694e3bc5f11f23d3ec2cb60c767"
+source = "git+https://github.com/vyges-tools/loom?branch=main#73ff5566e0c5aef6980e276601d8d3b21cf742ca"
+dependencies = [
+ "miniz_oxide",
+]
 
 [[package]]
 name = "vyges-sta-si"
 version = "0.1.42"
-source = "git+https://github.com/vyges-tools/sta-si?branch=main#1812446928b05b4cc1488163a842be9f14c32e99"
+source = "git+https://github.com/vyges-tools/sta-si?branch=main#3d0e472cb833fb4c041476c3b36559aa23f717f3"
 dependencies = [
  "vyges-events",
  "vyges-loom",
