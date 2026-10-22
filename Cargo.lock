@@ -109,8 +109,8 @@ checksum = "e6e4313cd5fcd3dad5cafa179702e2b244f760991f45397d14d4ebf38247da75"
 
 [[package]]
 name = "vyges-events"
-version = "0.1.43"
-source = "git+https://github.com/vyges-tools/events?branch=main#7bdc20f0dce09932e68d6c39e2502e99fd14bbd9"
+version = "0.1.44"
+source = "git+https://github.com/vyges-tools/events?branch=main#01165bedc9208abc345044cfc7ae705d2cf75666"
 dependencies = [
  "serde",
  "serde_json",
@@ -118,7 +118,7 @@ dependencies = [
 
 [[package]]
 name = "vyges-hold-fix"
-version = "0.1.43"
+version = "0.1.44"
 dependencies = [
  "vyges-events",
  "vyges-sta-si",
@@ -126,16 +126,16 @@ dependencies = [
 
 [[package]]
 name = "vyges-loom"
-version = "0.1.43"
-source = "git+https://github.com/vyges-tools/loom?branch=main#c1c10a3a75272127c5aebec261c0501d9f03022c"
+version = "0.1.44"
+source = "git+https://github.com/vyges-tools/loom?branch=main#928395f70d2c79c034e7fcd33ec6b3bef44edd59"
 dependencies = [
  "miniz_oxide",
 ]
 
 [[package]]
 name = "vyges-sta-si"
-version = "0.1.43"
-source = "git+https://github.com/vyges-tools/sta-si?branch=main#7bc0f37558307616bcf9b1d11de802c9ccce7d81"
+version = "0.1.44"
+source = "git+https://github.com/vyges-tools/sta-si?branch=main#fcfac2a952669595ef06ba01ee9d044c62525dc1"
 dependencies = [
  "vyges-events",
  "vyges-loom",
