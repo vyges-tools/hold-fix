@@ -25,6 +25,7 @@ const NL: &str = "module top ( clk, d, q ); input clk, d; output q; wire q1;\n\
 /// A flop with a 0.2 ns hold requirement, a 0.02 ns CK->Q, and a 0.15 ns delay cell.
 const LIB: &str = r#"
 library (d) {
+  lu_table_template (t) { variable_1 : input_net_transition; variable_2 : total_output_net_capacitance; }
   cell (DFF) {
     ff (IQ, IQN) { clocked_on : "CK"; next_state : "D"; }
     pin (CK) { direction : input; clock : true; capacitance : 0.002; }

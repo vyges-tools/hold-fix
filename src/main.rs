@@ -150,6 +150,7 @@ const DEMO_NL: &str = "module top ( clk, d, q ); input clk, d; output q; wire q1
                        endmodule";
 const DEMO_LIB: &str = r#"
 library (d) {
+  lu_table_template (t) { variable_1 : input_net_transition; variable_2 : total_output_net_capacitance; }
   cell (DFF) {
     ff (IQ, IQN) { clocked_on : "CK"; next_state : "D"; }
     pin (CK) { direction : input; clock : true; capacitance : 0.002; }
