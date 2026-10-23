@@ -97,20 +97,20 @@ machine-readable record for CI.
 
 ## Known defect — verify hold violations before acting on them
 
-**On at least one real block this toolchain reports hold violations that OpenSTA and
+**On at least one real block this toolchain reports hold violations that the reference timer and
 sign-off both say do not exist.** The cause is **not yet identified**; what follows is what
 is measured, so that a user can recognise the situation rather than trust the number.
 
 Measured on a routed sky130 block (`fft_top`, 2026-08-07) with the same netlist, SDC, SPEF
 and liberty given to both engines:
 
-| | this toolchain | OpenSTA | sign-off |
+| | this toolchain | reference timer | sign-off |
 | --- | ---: | ---: | ---: |
 | setup WNS | 6.7322 | 6.85 | — |
 | **hold WHS** | **−1.0682** | **+0.88** | **+0.8821** |
 
 Setup agrees to 1.7 %. Hold is out by **1.95 ns and disagrees about the sign**. Asked about
-the endpoint this toolchain calls worst — `_13207_/RESET_B` — OpenSTA answers `No paths
+the endpoint this toolchain calls worst — `_13207_/RESET_B` — the reference timer answers `No paths
 found`. Run on that block, this engine inserts **599 delay cells into a design that is
 already hold-clean by 0.88 ns**.
 
