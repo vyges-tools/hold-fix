@@ -304,7 +304,7 @@ fn finish(r: HoldResult, cli: &Cli) {
     }
 }
 
-fn main() {
+pub fn main() {
     let args: Vec<String> = std::env::args().skip(1).collect();
 
     if args.iter().any(|a| a == "--describe") {

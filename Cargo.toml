@@ -10,6 +10,11 @@ repository = "https://github.com/vyges-tools/hold-fix"
 
 # One dependency: the timing engine. vyges-sta-si re-exports the shared vyges-loom readers +
 # design model, so buffer-insert needs no other deps.
+[features]
+# The command-line entry built into the library too (`cli_main`), for the suite binaries
+# that link every engine and run the one they are invoked as.
+suite = []
+
 [dependencies]
 vyges-sta-si = { git = "https://github.com/vyges-tools/sta-si", branch = "main" }
 vyges-events = { git = "https://github.com/vyges-tools/events", branch = "main", default-features = false }
