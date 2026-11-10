@@ -1,5 +1,7 @@
 # vyges-hold-fix
 
+**[Download Loom](https://vyges.com/products/vyges-cli/#install)** · install the free [Vyges CLI](https://vyges.com/products/vyges-cli/), then `vyges install loom`
+
 **Post-route hold-fix ECO**: a gate-level netlist in, a **hold-fixed netlist** out — delay
 cells inserted on the data paths that reach their capture flops too early, scored by a real
 static-timing engine so setup is never sacrificed to fix hold.
