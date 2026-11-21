@@ -194,16 +194,17 @@ checksum = "e6e4313cd5fcd3dad5cafa179702e2b244f760991f45397d14d4ebf38247da75"
 
 [[package]]
 name = "vyges-events"
-version = "0.1.55"
-source = "git+https://github.com/vyges-tools/events?branch=main#87cca49dfd0e7030b890a084472a00930bcfb45e"
+version = "0.1.56"
+source = "git+https://github.com/vyges-tools/events?branch=main#fbeaba52516c5a210cf37648edd1327f28596420"
 dependencies = [
+ "libc",
  "serde",
  "serde_json",
 ]
 
 [[package]]
 name = "vyges-hold-fix"
-version = "0.1.55"
+version = "0.1.56"
 dependencies = [
  "libmimalloc-sys",
  "mimalloc",
@@ -213,8 +214,8 @@ dependencies = [
 
 [[package]]
 name = "vyges-loom"
-version = "0.1.55"
-source = "git+https://github.com/vyges-tools/loom?branch=main#5a5b8993a293df2bc14c2c372edf71a5a8e136ca"
+version = "0.1.56"
+source = "git+https://github.com/vyges-tools/loom?branch=main#743d6adf0af62b080b897587be286e28bcc7de6a"
 dependencies = [
  "miniz_oxide",
  "regex",
@@ -222,8 +223,8 @@ dependencies = [
 
 [[package]]
 name = "vyges-sta-si"
-version = "0.1.55"
-source = "git+https://github.com/vyges-tools/sta-si?branch=main#29774ef55cd7fd7aa464b154704c2f1a3d2cc2dc"
+version = "0.1.56"
+source = "git+https://github.com/vyges-tools/sta-si?branch=main#0a29f9cd2e4eee24f61916ab98c8af4345d24e3c"
 dependencies = [
  "vyges-events",
  "vyges-loom",
